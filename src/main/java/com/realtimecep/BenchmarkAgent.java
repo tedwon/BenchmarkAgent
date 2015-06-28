@@ -1,5 +1,9 @@
 package com.realtimecep;
 
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.netty.RxNetty;
+
 /**
  * Benchmark Agent Class.
  *
@@ -27,6 +31,12 @@ public class BenchmarkAgent {
 
                     // TODO: biz code here
                     // sender.send(data)
+                    RxNetty.createHttpGet("http://localhost:8080/data").forEach(content -> {});
+//                    RxNetty.createHttpGet("http://localhost:8080/data").
+//                    RxNetty.createHttpGet("http://localhost:8080/data")
+//                        .map(response -> response.getStatus().code())
+//                        .toBlocking()
+//                        .forEach(System.out::println);
 
                     countLast5s++;
                     // info
@@ -61,7 +71,7 @@ public class BenchmarkAgent {
 
         // 1초당 데이터 전송 rate
         // input stress 수치
-        int rate = 100000;
+        int rate = 1000;
 
         if (args.length == 1) {
             rate = Integer.parseInt(args[0]);

@@ -1,13 +1,11 @@
-package com.realtimecep;
+package com.realtimecep.rxnetty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 
-import java.nio.charset.Charset;
-
-public final class RxNettyExample {
+public final class RxNettyExampleServer {
 
     public static void main(String... args) throws InterruptedException {
         HttpServer<ByteBuf, ByteBuf> server = RxNetty.createHttpServer(8080, (request, response) -> {
@@ -29,21 +27,8 @@ public final class RxNettyExample {
 
         server.start();
 
-        RxNetty.createHttpGet("http://localhost:8080/")
-            .flatMap(response -> response.getContent())
-            .map(data -> "Client => " + data.toString(Charset.defaultCharset()))
-            .toBlocking().forEach(System.out::println);
-
-        RxNetty.createHttpGet("http://localhost:8080/error")
-            .flatMap(response -> response.getContent())
-            .map(data -> "Client => " + data.toString(Charset.defaultCharset()))
-            .toBlocking().forEach(System.out::println);
-
-        RxNetty.createHttpGet("http://localhost:8080/data")
-            .flatMap(response -> response.getContent())
-            .map(data -> "Client => " + data.toString(Charset.defaultCharset()))
-            .toBlocking().forEach(System.out::println);
-
-        server.shutdown();
+        synchronized (RxNettyExampleServer.class) {
+            RxNettyExampleServer.class.wait();
+        }
     }
 }
