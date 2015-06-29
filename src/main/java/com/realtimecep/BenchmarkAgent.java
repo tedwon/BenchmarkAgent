@@ -17,9 +17,7 @@ public class BenchmarkAgent {
 
 	private final static Logger logger = LoggerFactory.getLogger(BenchmarkAgent.class);
 
-	private final static String URL = "http://lnadpap1501.nhnjp.ism:20080/";
-	//	private final static String URL = "http://cnaddev7504.line.ism:20080/";
-	//	private final static String URL = "http://localhost:8080/data";
+	private final static String URL = "http://localhost:8080/data";
 
 	/**
 	 * 1초당 평균 rate 수만큼 데이터 전송하기. <p/>부하 테스트 클라이언트 용도로 사용한다.
@@ -42,15 +40,6 @@ public class BenchmarkAgent {
 
 					RxNetty.createHttpGet(URL).forEach(content -> {
 					});
-					//					RxNetty.createHttpGet(URL)
-					//							.map(response -> response.getStatus().code())
-					//							.toBlocking()
-					//							.forEach(System.out::println);
-					//                    RxNetty.createHttpGet("http://localhost:8080/data").
-					//                    RxNetty.createHttpGet("http://localhost:8080/data")
-					//                        .map(response -> response.getStatus().code())
-					//                        .toBlocking()
-					//                        .forEach(System.out::println);
 
 					countLast5s++;
 					// info
@@ -96,7 +85,6 @@ public class BenchmarkAgent {
 		logger.info("[Agent] ### RATE={}", rate);
 		logger.info("[Agent] ################################################");
 		logger.info("[Agent] ################################################");
-
 
 		new BenchmarkAgent().run(rate);
 	}

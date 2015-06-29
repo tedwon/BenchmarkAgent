@@ -13,76 +13,47 @@ import rx.functions.Action1;
 
 public final class RxNettyExampleClient {
 
-    static class WordCountAction implements Action1<HttpClientResponse<ByteBuf>> {
+	public static void main(String... args) throws Exception {
 
-        public volatile int wordCount;
+		long start = System.currentTimeMillis();
 
-        @Override
-        public void call(HttpClientResponse<ByteBuf> response) {
-            response.getContent().forEach(content -> wordCount = Integer.parseInt(content.toString(Charset.defaultCharset())));
-        }
-    }
+		RxNetty.createHttpGet("http://localhost:8080/data")
+				.map(response -> response.getStatus().code())
+				.toBlocking().forEach(System.out::println);
 
-    public static void main(String... args) throws Exception {
+		long end = System.currentTimeMillis();
+		System.out.println(end - start + "ms");
 
-        long start = System.currentTimeMillis();
+		Thread.sleep(10000);
+	}
 
-//        WordCountAction wAction = new WordCountAction();
-//        RxNetty.createHttpGet("http://localhost:8080/data").forEach(content -> {});
+	public static String sendHelloRequest() throws InterruptedException, ExecutionException, TimeoutException {
+		return RxNetty.createHttpGet("http://localhost:8080/data")
+				.flatMap(response -> {
+					printResponseHeader(response);
+					return response.getContent().<String>map(content -> content.toString(Charset.defaultCharset()));
+				})
+				.toBlocking()
+				.toFuture().get(1, TimeUnit.MINUTES);
+	}
 
-//        RxNetty.createHttpGet("http://localhost:8080/data")
-//            .flatMap(response -> response.getContent())
-//            .map(data -> "Client => " + data.toString(Charset.defaultCharset()))
-//            .toBlocking().forEach(System.out::println);
+	public static void printResponseHeader(HttpClientResponse<ByteBuf> response) {
+		System.out.println("New response received.");
+		System.out.println("========================");
+		System.out.println(response.getHttpVersion().text() + ' ' + response.getStatus().code()
+				+ ' ' + response.getStatus().reasonPhrase());
+		for (Map.Entry<String, String> header : response.getHeaders().entries()) {
+			System.out.println(header.getKey() + ": " + header.getValue());
+		}
+	}
 
-        RxNetty.createHttpGet("http://localhost:8080/data")
-            .map(response -> response.getStatus().code())
-            .toBlocking().forEach(System.out::println);
+	static class WordCountAction implements Action1<HttpClientResponse<ByteBuf>> {
 
-//        PipelineConfigurator<HttpClientResponse<ByteBuf>, HttpClientRequest<String>> pipelineConfigurator
-//            = PipelineConfigurators.httpClientConfigurator();
-//
-//        HttpClient<String, ByteBuf> client = RxNetty.createHttpClient("localhost", 8080, pipelineConfigurator);
-//        HttpClientRequest<String> request = HttpClientRequest.create(HttpMethod.POST, "test/post");
-////        client.submit(request).toBlocking().forEach(System.out::println);
-//        client.submit(request).forEach(System.out::println);
+		public volatile int wordCount;
 
-//        RxNetty.createHttpGet("http://localhost:8080/data");
-
-//            .toBlocking()
-//            .toFuture()
-//            .get(1, TimeUnit.MINUTES);
-
-//        RxNetty.createHttpGet("http://localhost:8080/data")
-//            .flatMap(response -> response.getContent())
-//            .map(data -> "Client => " + data.toString(Charset.defaultCharset()));
-//            .toBlocking().forEach(System.out::println);
-
-//        sendHelloRequest();
-
-        long end = System.currentTimeMillis();
-        System.out.println(end - start + "ms");
-
-        Thread.sleep(10000);
-    }
-
-    public static String sendHelloRequest() throws InterruptedException, ExecutionException, TimeoutException {
-        return RxNetty.createHttpGet("http://localhost:8080/data")
-            .flatMap(response -> {
-                printResponseHeader(response);
-                return response.getContent().<String>map(content -> content.toString(Charset.defaultCharset()));
-            })
-            .toBlocking()
-            .toFuture().get(1, TimeUnit.MINUTES);
-    }
-
-    public static void printResponseHeader(HttpClientResponse<ByteBuf> response) {
-        System.out.println("New response received.");
-        System.out.println("========================");
-        System.out.println(response.getHttpVersion().text() + ' ' + response.getStatus().code()
-                           + ' ' + response.getStatus().reasonPhrase());
-        for (Map.Entry<String, String> header : response.getHeaders().entries()) {
-            System.out.println(header.getKey() + ": " + header.getValue());
-        }
-    }
+		@Override
+		public void call(HttpClientResponse<ByteBuf> response) {
+			response.getContent().forEach(content -> wordCount = Integer.parseInt(content.toString(Charset.defaultCharset())));
+		}
+	}
 }
